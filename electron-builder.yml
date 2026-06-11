@@ -1,0 +1,35 @@
+appId: org.icformat.icfeditor
+productName: ICF Editor
+copyright: Copyright © 2026 Edison Williams
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+fileAssociations:
+  - ext: icf
+    name: ICF Document
+    role: Editor
+    mimeType: application/icf
+  - ext: icx
+    name: ICX Index
+    role: Editor
+    mimeType: application/icx
+win:
+  target:
+    - nsis
+  artifactName: ${productName}-${version}-setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target:
+    - dmg
+  category: public.app-category.developer-tools
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
+  maintainer: Edison Williams

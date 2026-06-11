@@ -1,0 +1,83 @@
+@kind icf
+@version 1.0
+@encoding utf-8
+@delimiter comma
+@escape backslash
+
+@created 2026-05-20T08:30:00Z
+@modified 2026-05-20T08:30:00Z
+@revision 1
+
+@records 3
+
+@index sample.icx
+
+@metadata
+
+title: DMS Export
+description: Mixed document export from Docuventa DMS
+creator: Administrator
+
+@schema id=Invoice
+
+folderdata:
+  [folderid, documentid]
+
+documentindex:
+  [InvoiceNo, InvoiceDate, VendorRef, ProjectRef]
+
+lineindex:
+
+  BillItems[]:
+    [SNo, Item, Quantity, Amount]
+
+@masters
+
+Vendor:
+  - VEN100, 9876543210, vendor@example.com
+  - VEN200, 9898989898, vendor2@example.com
+
+Project:
+  - PRJ001, Coimbatore, ABC Constructions
+
+@data
+
+@record schema=Invoice id=DOC1001 uuid=550e8400-e29b-41d4-a716-446655440001 revision=1
+
+folderdata:
+  = F001, DOC1001
+
+documentindex:
+  = INV-2026-001, 2026-05-01, Vendor:VEN100, Project:PRJ001
+
+lineindex:
+
+  BillItems:
+    - 1, Cement, 100, 42000
+    - 2, Steel Rod, 50, 42500
+
+@record schema=Invoice id=DOC2001 uuid=550e8400-e29b-41d4-a716-446655440002 revision=2
+
+folderdata:
+  = F002, DOC2001
+
+documentindex:
+  = INV-2026-002, 2026-05-10, Vendor:VEN200, Project:PRJ001
+
+lineindex:
+
+  BillItems:
+    - 1, Paint, 120, 36700
+
+@record schema=Invoice id=DOC3001 uuid=550e8400-e29b-41d4-a716-446655440003 revision=1
+
+folderdata:
+  = F003, DOC3001
+
+documentindex:
+  = INV-2026-003, 2026-05-20, Vendor:VEN200, Project:PRJ001
+
+lineindex:
+
+  BillItems:
+    - 1, Diesel, 500, 46000

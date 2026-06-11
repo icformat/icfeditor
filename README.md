@@ -65,6 +65,11 @@ push a tag and let GitHub Actions build all three platforms on their native runn
 git tag v0.1.0 && git push origin v0.1.0
 ```
 
+Builds are **unsigned** by default. macOS code-signing + notarization turn on automatically when
+the signing secrets are present in the environment — add the repository secrets `CSC_LINK`,
+`CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`, and
+`electron-builder.config.cjs` enables `hardenedRuntime` + `notarize` on its own.
+
 ## Project layout
 
 ```

@@ -54,6 +54,14 @@ jobs:
         run: npm ci
       - name: Package
         run: npm run package
+        env:
+          # macOS signing/notarization auto-enable when these secrets exist;
+          # CSC_LINK is gated to macOS so a mac cert never reaches Win/Linux.
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.CSC_KEY_PASSWORD || '' }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       - name: Upload installers
         uses: actions/upload-artifact@v4
         with:

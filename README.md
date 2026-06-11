@@ -52,7 +52,8 @@ The app icon is rendered from `src/renderer/src/assets/editor-logo.svg` into `bu
 > requirement.
 
 CI (`.github/workflows/ci.yml`) runs typecheck + tests + build on a Windows/macOS/Linux matrix;
-tagged `v*` pushes additionally package installers and upload them as artifacts.
+tagged `v*` pushes additionally package installers on each OS and **attach them to the GitHub
+Release** for that tag.
 
 ### Releases
 

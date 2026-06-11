@@ -189,12 +189,12 @@ remaining phases are additive, not structural.
 
 ## 8. Dependency on `icf.js`
 
-The scaffold references the sibling library by relative path:
+The editor depends on the published [`icf.js`](https://www.npmjs.com/package/icf.js) package:
 
 ```json
-"dependencies": { "icf.js": "file:../icf.js" }
+"dependencies": { "icf.js": "^1.0.0" }
 ```
 
-`../icf.js/dist` is already built (ESM + `index.d.ts`), so types and runtime resolve without a
-publish step. If the library is later published to npm, only the version specifier changes; no
-service code changes, because all format access is funnelled through the service adapters.
+It ships ESM + `index.d.ts`, so types and runtime resolve from a normal `npm install`. All format
+access is funnelled through the service adapters, so a future `icf.js` upgrade is a version bump
+with no editor code changes.

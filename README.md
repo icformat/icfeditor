@@ -21,13 +21,13 @@ noted in the plan but not required for the feature set.
 ## Requirements
 
 - Node ≥ 20 (developed on Node 24)
-- The sibling [`icf.js`](../icf.js) repository present and built (`../icf.js/dist` — already built),
-  referenced via `"icf.js": "file:../icf.js"`.
+- Format parsing/validation/ICX generation come from the [`icf.js`](https://www.npmjs.com/package/icf.js)
+  npm package (a normal dependency — `npm install` pulls it in).
 
 ## Getting started
 
 ```bash
-npm install          # also links ../icf.js
+npm install          # installs dependencies, incl. icf.js from npm
 npm run dev          # launch Electron with HMR
 ```
 
@@ -51,9 +51,8 @@ The app icon is rendered from `src/renderer/src/assets/editor-logo.svg` into `bu
 > Linux/macOS runners where this is a non-issue. `npm run build` (the app bundles) has no such
 > requirement.
 
-CI (`.github/workflows/ci.yml`) checks out this repo alongside `icf.js`, builds the library, then
-runs typecheck + tests + build on a Windows/macOS/Linux matrix; tagged `v*` pushes additionally
-package installers and upload them as artifacts.
+CI (`.github/workflows/ci.yml`) runs typecheck + tests + build on a Windows/macOS/Linux matrix;
+tagged `v*` pushes additionally package installers and upload them as artifacts.
 
 ### Releases
 

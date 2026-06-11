@@ -26,13 +26,12 @@
   },
   "dependencies": {
     "fast-xml-parser": "^4.5.0",
-    "icf.js": "file:../icf.js",
+    "icf.js": "^1.0.0",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
     "@monaco-editor/react": "^4.6.0",
     "@resvg/resvg-js": "^2.6.2",
-    "png-to-ico": "^2.1.8",
     "@tanstack/react-virtual": "^3.10.0",
     "@types/node": "^20.19.0",
     "@types/react": "^18.3.0",
@@ -50,6 +49,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "happy-dom": "^15.0.0",
     "monaco-editor": "^0.50.0",
+    "png-to-ico": "^2.1.8",
     "postcss": "^8.4.0",
     "prettier": "^3.3.0",
     "react": "^18.3.0",

@@ -65,10 +65,23 @@ push a tag and let GitHub Actions build all three platforms on their native runn
 git tag v0.1.0 && git push origin v0.1.0
 ```
 
-Builds are **unsigned** by default. macOS code-signing + notarization turn on automatically when
-the signing secrets are present in the environment — add the repository secrets `CSC_LINK`,
-`CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`, and
-`electron-builder.config.cjs` enables `hardenedRuntime` + `notarize` on its own.
+Builds are **unsigned** by default. The release job publishes a `SHA256SUMS.txt` alongside the
+installers so downloads can be verified (`sha256sum -c SHA256SUMS.txt`, or `Get-FileHash` on
+Windows), and the GitHub Release notes spell out the per-OS install steps below.
+
+Because the installers aren't code-signed, the OS shows a one-time trust prompt:
+
+- **Windows** — Defender SmartScreen may show *"Windows protected your PC"*. Click
+  **More info → Run anyway**. This is expected for unsigned apps and does not indicate a problem;
+  it disappears once the app is installed via a trusted (CA-issued) signing certificate.
+- **macOS** — the build isn't notarized, so Gatekeeper blocks a double-click. Right-click the app
+  → **Open**, then confirm once.
+
+macOS code-signing + notarization turn on automatically when the signing secrets are present in the
+environment — add the repository secrets `CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`,
+`APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`, and `electron-builder.config.cjs` enables
+`hardenedRuntime` + `notarize` on its own. Windows signing can be added later with a CA-issued
+(OV/EV) certificate — self-signing does **not** help, as it earns no SmartScreen reputation.
 
 ## Project layout
 

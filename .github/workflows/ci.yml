@@ -86,8 +86,31 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+      - name: Collect installers and generate SHA-256 checksums
+        run: |
+          mkdir -p dist
+          find artifacts -type f \
+            \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' \
+               -o -name '*.AppImage' -o -name '*.deb' \) \
+            -exec cp {} dist/ \;
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          echo "Artifacts to publish:"; ls -la; echo; cat SHA256SUMS.txt
       - name: Attach installers to the release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: dist/*
           fail_on_unmatched_files: false
+          append_body: true
+          body: |
+            ### Downloads
+
+            Installers are **unsigned**. Verify your download against `SHA256SUMS.txt`
+            (`sha256sum -c SHA256SUMS.txt` on Linux/macOS, `Get-FileHash` on Windows).
+
+            - **Windows** — SmartScreen may show *"Windows protected your PC"*.
+              Click **More info → Run anyway**. The installer is safe; the warning only
+              means it isn't code-signed yet.
+            - **macOS** — the build isn't notarized, so Gatekeeper will block a double-click.
+              Right-click the app → **Open**, then confirm once.
+            - **Linux** — `chmod +x *.AppImage` then run it, or install the `.deb`.

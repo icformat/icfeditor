@@ -40,6 +40,10 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ${{ matrix.os }}
+    # `secrets` can't be used in a step `if:`, so resolve a boolean flag here at
+    # the job level (where secrets ARE allowed) and key the steps off it.
+    env:
+      HAS_MAC_CERT: ${{ secrets.CSC_LINK != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -57,12 +61,12 @@ jobs:
       # empty) CSC_LINK as "sign me", so an empty string breaks the build. The
       # only way to stay unsigned is to leave the variable unset entirely.
       - name: Package (unsigned)
-        if: ${{ runner.os != 'macOS' || secrets.CSC_LINK == '' }}
+        if: ${{ runner.os != 'macOS' || env.HAS_MAC_CERT != 'true' }}
         run: npm run package
       # Signed + notarized macOS build, only when the secrets actually exist.
       # CSC_LINK is set ONLY in this branch, so it is never an empty string.
       - name: Package (macOS, signed)
-        if: ${{ runner.os == 'macOS' && secrets.CSC_LINK != '' }}
+        if: ${{ runner.os == 'macOS' && env.HAS_MAC_CERT == 'true' }}
         run: npm run package
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}

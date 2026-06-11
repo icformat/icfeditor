@@ -114,6 +114,38 @@ index + outline. The tree, properties, validation, search, and statistics panels
 Validation diagnostics are pushed back into Monaco as markers. This keeps the saved file exactly
 what the user sees and gives a clean separation between UI and format logic.
 
+> **Note on navigation:** record navigation (next/prev, Explorer clicks, Go To) is always driven
+> by this **live-parsed** index, never by an ICX — so it stays correct even mid-edit, when an
+> ICX's offsets would be stale. The editor *produces and verifies* ICX files (see below); it does
+> not rely on them to move around.
+
+## When to use ICX
+
+ICX is the companion **index** for an ICF file: a machine-oriented table-of-contents holding each
+record's line, byte offset, size, and checksum, plus master positions, UUIDs, `@count`, and
+`@revision`. Think of it as the footer/index in Parquet or the index pages in SQLite — a
+verifiable, randomly-addressable sidecar for an otherwise sequential text file.
+
+Its value shows up in **machine-to-machine, read-mostly** scenarios — not in interactive editing:
+
+- **Cross-system data interchange.** When one application exports data and another imports it, the
+  exporter writes the ICX *atomically with* the ICF, so the index is always current (the staleness
+  that makes the editor avoid ICX during live edits simply never arises). The importer can then:
+  - **verify before trusting** — check `@count` + the whole-file `@checksum`, then per-record
+    checksums; a mismatch pinpoints *which* record is corrupt rather than failing the whole batch;
+  - **load selectively / stream** — seek straight to a record via its offset+size (including HTTP
+    Range reads against a file on a CDN/object store) without parsing the whole file;
+  - **cross-reference stably** — UUIDs give durable identity across systems that don't share keys.
+- **Integrity & archival.** Per-record checksums detect corruption or tampering at record
+  granularity for stored or transmitted data.
+- **Cheap metadata & change detection.** Count, revision, and checksums answer "how big? what
+  revision? what changed since last time?" from the index alone, enabling incremental sync.
+
+In all of these the ICX is a **contract between producers and consumers of ICF**. The editor's
+role is the supporting one: **regenerate** a correct index (F5), **compare** a stored ICX against
+its ICF (the ICX Compare panel flags missing / stale / changed records), and **export** one on
+demand — i.e. authoring and QA for the index that downstream systems consume.
+
 ## Features
 
 - VS Code-like shell: toolbar, tabs, tree explorer, Monaco editor, tabbed bottom panel, status bar

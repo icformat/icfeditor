@@ -68,7 +68,7 @@ export function Toolbar({ dispatch }: ToolbarProps) {
         disabled={!active}
         className="rounded px-2 py-1 text-xs hover:bg-app-surface-hover disabled:opacity-40"
       >
-        {active?.mode === 'edit' ? '✏️ Edit' : '👁️ View'}
+        {active?.mode === 'edit' ? '✏️ Mode: Edit' : '👁️ Mode: View'}
       </button>
 
       <button

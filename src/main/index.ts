@@ -68,38 +68,62 @@ function createWindow(): BrowserWindow {
   return win
 }
 
-// A file passed as an argument (Windows/Linux file association or CLI).
-const fileArg = process.argv.find((a) => a.endsWith('.icf') || a.endsWith('.icx'))
-if (fileArg) pendingOpenPath = fileArg
+/** Finds an .icf/.icx path among CLI args (file association / command line). */
+function findFileArg(argv: string[]): string | null {
+  return argv.find((a) => a.endsWith('.icf') || a.endsWith('.icx')) ?? null
+}
 
-// macOS file association.
-app.on('open-file', (event, path) => {
-  event.preventDefault()
-  const win = BrowserWindow.getAllWindows()[0]
-  if (win) win.webContents.send(IpcChannels.openPath, path)
-  else pendingOpenPath = path
-})
+// A file passed as an argument on first launch (Windows/Linux association / CLI).
+pendingOpenPath = findFileArg(process.argv)
 
-// The renderer calls this once the user has resolved unsaved changes; it marks
-// the window approved and re-issues the close, which now passes the guard.
-ipcMain.handle(IpcChannels.forceClose, (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender)
-  if (win) {
-    closeApproved.add(win)
-    win.close()
-  }
-})
-
-app.whenReady().then(() => {
-  registerIpcHandlers()
-  buildMenu()
-  createWindow()
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+// Single instance: double-clicking an .icf/.icx while the app is already running
+// must open it in the existing window, not spawn a second copy. The first
+// process holds the lock; a later launch hands its argv to `second-instance`
+// here and then exits.
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', (_event, argv) => {
+    const path = findFileArg(argv)
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+      if (path) win.webContents.send(IpcChannels.openPath, path)
+    } else if (path) {
+      pendingOpenPath = path
+    }
   })
-})
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+  // macOS file association.
+  app.on('open-file', (event, path) => {
+    event.preventDefault()
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) win.webContents.send(IpcChannels.openPath, path)
+    else pendingOpenPath = path
+  })
+
+  // The renderer calls this once the user has resolved unsaved changes; it marks
+  // the window approved and re-issues the close, which now passes the guard.
+  ipcMain.handle(IpcChannels.forceClose, (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      closeApproved.add(win)
+      win.close()
+    }
+  })
+
+  app.whenReady().then(() => {
+    registerIpcHandlers()
+    buildMenu()
+    createWindow()
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
+  })
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit()
+  })
+}

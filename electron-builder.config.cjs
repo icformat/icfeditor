@@ -19,9 +19,13 @@ module.exports = {
     buildResources: 'build'
   },
   files: ['out/**/*', 'package.json'],
+  // File associations. `rank: 'Owner'` makes macOS LaunchServices treat ICF
+  // Editor as the owning app for these types (it claims the default). On Windows
+  // the NSIS hooks in build/installer.nsh additionally clear any pre-existing
+  // per-extension UserChoice so the install overrides a prior default app.
   fileAssociations: [
-    { ext: 'icf', name: 'ICF Document', role: 'Editor', mimeType: 'application/icf' },
-    { ext: 'icx', name: 'ICX Index', role: 'Editor', mimeType: 'application/icx' }
+    { ext: 'icf', name: 'ICF Document', role: 'Editor', rank: 'Owner', mimeType: 'application/icf' },
+    { ext: 'icx', name: 'ICX Index', role: 'Editor', rank: 'Owner', mimeType: 'application/icx' }
   ],
   win: {
     target: ['nsis'],

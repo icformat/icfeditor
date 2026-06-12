@@ -4,6 +4,7 @@ import { Toolbar } from './components/Toolbar'
 import { TabBar } from './components/TabBar'
 import { StatusBar } from './components/StatusBar'
 import { SchemaFilter } from './components/SchemaFilter'
+import { Splitter } from './components/Splitter'
 import { TreePanel } from './panels/TreePanel'
 import { PropertiesPanel } from './panels/PropertiesPanel'
 import { ValidationPanel } from './panels/ValidationPanel'
@@ -49,6 +50,16 @@ export function App() {
 
   const activeBottom = useUiStore((s) => s.activeBottomPanel)
   const setBottom = useUiStore((s) => s.setBottomPanel)
+
+  // Resizable layout dimensions + the editor maximize toggle.
+  const sidebarWidth = useUiStore((s) => s.sidebarWidth)
+  const propertiesHeight = useUiStore((s) => s.propertiesHeight)
+  const bottomPanelHeight = useUiStore((s) => s.bottomPanelHeight)
+  const maximized = useUiStore((s) => s.editorMaximized)
+  const setSidebarWidth = useUiStore((s) => s.setSidebarWidth)
+  const setPropertiesHeight = useUiStore((s) => s.setPropertiesHeight)
+  const setBottomPanelHeight = useUiStore((s) => s.setBottomPanelHeight)
+  const toggleMaximized = useUiStore((s) => s.toggleEditorMaximized)
 
   const revealLine = useCallback((line: number) => controller.current?.revealLine(line), [])
   const revealNode = useCallback(
@@ -97,31 +108,82 @@ export function App() {
       <TabBar />
 
       <div className="flex min-h-0 flex-1">
-        {/* Left sidebar: outline + record properties. */}
-        <aside className="flex w-72 flex-col border-r border-app-border bg-app-surface">
-          <SectionHeader label="Explorer" />
-          <SchemaFilter />
-          <div className="min-h-0 flex-1">
-            {/* Key by document so the virtualized tree fully re-initializes (and
-                re-measures) when the active tab changes, rather than reusing a
-                stale virtualizer instance from the previous document. */}
-            <TreePanel key={activeId ?? 'none'} onReveal={revealNode} />
-          </div>
-          <SectionHeader label="Properties" />
-          <div className="h-56 overflow-auto border-t border-app-border">
-            <PropertiesPanel />
-          </div>
-        </aside>
+        {/* Left sidebar: outline + record properties. Hidden when maximized. */}
+        {!maximized && (
+          <>
+            <aside
+              className="flex shrink-0 flex-col border-r border-app-border bg-app-surface"
+              style={{ width: sidebarWidth }}
+            >
+              <SectionHeader label="Explorer" />
+              <SchemaFilter />
+              <div className="min-h-0 flex-1">
+                {/* Key by document so the virtualized tree fully re-initializes (and
+                    re-measures) when the active tab changes, rather than reusing a
+                    stale virtualizer instance from the previous document. */}
+                <TreePanel key={activeId ?? 'none'} onReveal={revealNode} />
+              </div>
+              <Splitter
+                axis="y"
+                invert
+                value={propertiesHeight}
+                min={96}
+                max={480}
+                onChange={setPropertiesHeight}
+                ariaLabel="Resize properties panel"
+              />
+              <SectionHeader label="Properties" />
+              <div
+                className="shrink-0 overflow-auto"
+                style={{ height: propertiesHeight }}
+              >
+                <PropertiesPanel />
+              </div>
+            </aside>
+            <Splitter
+              axis="x"
+              value={sidebarWidth}
+              min={180}
+              max={640}
+              onChange={setSidebarWidth}
+              ariaLabel="Resize sidebar"
+            />
+          </>
+        )}
 
         {/* Center: the Monaco editor. */}
         <main className="flex min-w-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1">
+          <div className="relative min-h-0 flex-1">
             <EditorPane resolvedTheme={resolvedTheme} onReady={(c) => (controller.current = c)} />
+            <button
+              type="button"
+              onClick={toggleMaximized}
+              title={maximized ? 'Restore layout' : 'Maximize editor'}
+              aria-label={maximized ? 'Restore layout' : 'Maximize editor'}
+              aria-pressed={maximized}
+              className="absolute right-3 top-2 z-10 rounded border border-app-border bg-app-surface/90 p-1 text-app-muted shadow-sm hover:bg-app-surface-hover hover:text-app-text"
+            >
+              <MaximizeIcon maximized={maximized} />
+            </button>
           </div>
 
-          {/* Bottom panel with tabs. */}
-          <div className="flex h-64 flex-col border-t border-app-border bg-app-surface">
-            <div className="flex border-b border-app-border" role="tablist" aria-label="Tools">
+          {/* Bottom panel with tabs. Hidden when maximized. */}
+          {!maximized && (
+            <>
+              <Splitter
+                axis="y"
+                invert
+                value={bottomPanelHeight}
+                min={96}
+                max={640}
+                onChange={setBottomPanelHeight}
+                ariaLabel="Resize bottom panel"
+              />
+              <div
+                className="flex shrink-0 flex-col bg-app-surface"
+                style={{ height: bottomPanelHeight }}
+              >
+                <div className="flex border-b border-app-border" role="tablist" aria-label="Tools">
               {BOTTOM_TABS.map((tab) => (
                 <button
                   key={tab.id}
@@ -149,8 +211,10 @@ export function App() {
               {activeBottom === 'statistics' && <StatisticsPanel />}
               {activeBottom === 'icx' && <IcxComparePanel />}
               {activeBottom === 'tips' && <TipsPanel />}
-            </div>
-          </div>
+                </div>
+              </div>
+            </>
+          )}
         </main>
       </div>
 
@@ -166,5 +230,28 @@ function SectionHeader({ label }: { label: string }) {
     <div className="bg-app-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-app-muted">
       {label}
     </div>
+  )
+}
+
+/** Corner-bracket glyph: outward = maximize, inward = restore. */
+function MaximizeIcon({ maximized }: { maximized: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {maximized ? (
+        <path d="M6 2.5v3.5H2.5M10 2.5v3.5h3.5M6 13.5v-3.5H2.5M10 13.5v-3.5h3.5" />
+      ) : (
+        <path d="M2.5 6V2.5H6M13.5 6V2.5H10M2.5 10v3.5H6M13.5 10v3.5H10" />
+      )}
+    </svg>
   )
 }

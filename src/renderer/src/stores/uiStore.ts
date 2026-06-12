@@ -2,6 +2,56 @@ import { create } from 'zustand'
 import type { ThemePreference } from '../models/settings'
 import type { DiskState } from '../utils/diskState'
 
+/** Persisted, resizable layout dimensions (px). Defaults match the old fixed
+ *  Tailwind sizes: w-72 / h-56 / h-64. Stored in localStorage so the user's
+ *  pane sizes survive restarts. */
+export interface LayoutSizes {
+  sidebarWidth: number
+  propertiesHeight: number
+  bottomPanelHeight: number
+}
+
+const LAYOUT_KEY = 'icfeditor.layout'
+const LAYOUT_DEFAULTS: LayoutSizes = {
+  sidebarWidth: 288,
+  propertiesHeight: 224,
+  bottomPanelHeight: 256
+}
+
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v))
+
+function loadLayout(): LayoutSizes {
+  if (typeof localStorage === 'undefined') return LAYOUT_DEFAULTS
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY)
+    if (!raw) return LAYOUT_DEFAULTS
+    const p = JSON.parse(raw) as Partial<LayoutSizes>
+    return {
+      sidebarWidth: clamp(Number(p.sidebarWidth) || LAYOUT_DEFAULTS.sidebarWidth, 160, 800),
+      propertiesHeight: clamp(Number(p.propertiesHeight) || LAYOUT_DEFAULTS.propertiesHeight, 80, 640),
+      bottomPanelHeight: clamp(Number(p.bottomPanelHeight) || LAYOUT_DEFAULTS.bottomPanelHeight, 80, 720)
+    }
+  } catch {
+    return LAYOUT_DEFAULTS
+  }
+}
+
+function saveLayout(sizes: LayoutSizes): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(
+      LAYOUT_KEY,
+      JSON.stringify({
+        sidebarWidth: sizes.sidebarWidth,
+        propertiesHeight: sizes.propertiesHeight,
+        bottomPanelHeight: sizes.bottomPanelHeight
+      })
+    )
+  } catch {
+    /* storage may be unavailable (private mode / quota) — sizes stay in-memory */
+  }
+}
+
 /** Which side/bottom panels are visible (VS Code-like layout). */
 export type PanelId = 'tree' | 'properties' | 'validation' | 'search' | 'statistics' | 'tips'
 
@@ -45,8 +95,18 @@ interface UiState {
   externalPrompt: ExternalPrompt | null
   /** Periodically write dirty, saved documents to disk (Prompt.md §Editor Features). */
   autosave: boolean
+  /** Resizable pane dimensions (px), persisted to localStorage. */
+  sidebarWidth: number
+  propertiesHeight: number
+  bottomPanelHeight: number
+  /** When true, the editor body fills the window (sidebar + bottom panel hidden). */
+  editorMaximized: boolean
 
   setTheme(theme: ThemePreference): void
+  setSidebarWidth(width: number): void
+  setPropertiesHeight(height: number): void
+  setBottomPanelHeight(height: number): void
+  toggleEditorMaximized(): void
   setAutosave(enabled: boolean): void
   openClosePrompt(prompt: ClosePrompt): void
   closeClosePrompt(): void
@@ -79,8 +139,26 @@ export const useUiStore = create<UiState>((set) => ({
   closePrompt: null,
   externalPrompt: null,
   autosave: false,
+  ...loadLayout(),
+  editorMaximized: false,
 
   setTheme: (theme) => set({ theme }),
+  setSidebarWidth: (sidebarWidth) =>
+    set((s) => {
+      saveLayout({ ...s, sidebarWidth })
+      return { sidebarWidth }
+    }),
+  setPropertiesHeight: (propertiesHeight) =>
+    set((s) => {
+      saveLayout({ ...s, propertiesHeight })
+      return { propertiesHeight }
+    }),
+  setBottomPanelHeight: (bottomPanelHeight) =>
+    set((s) => {
+      saveLayout({ ...s, bottomPanelHeight })
+      return { bottomPanelHeight }
+    }),
+  toggleEditorMaximized: () => set((s) => ({ editorMaximized: !s.editorMaximized })),
   setAutosave: (autosave) => set({ autosave }),
   openClosePrompt: (closePrompt) => set({ closePrompt }),
   closeClosePrompt: () => set({ closePrompt: null }),

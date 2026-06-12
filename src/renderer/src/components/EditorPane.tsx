@@ -40,6 +40,10 @@ export function EditorPane({ resolvedTheme, onReady }: EditorPaneProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
   const bookmarkDecorations = useRef<string[]>([])
+  // Scroll-position indicator (the floating record-id pill). Driven imperatively
+  // via these refs so scroll ticks never re-render the editor.
+  const scrollHintRef = useRef<HTMLDivElement | null>(null)
+  const scrollHintTimer = useRef<number | null>(null)
 
   const handleMount: OnMount = (instance, monaco) => {
     editorRef.current = instance
@@ -92,6 +96,54 @@ export function EditorPane({ resolvedTheme, onReady }: EditorPaneProps) {
       { passive: false }
     )
 
+    // Scroll-position indicator: while scrolling, show the id of the record at
+    // the top of the viewport in a pill that tracks the scrollbar thumb (where
+    // the cursor is during a drag), then fades out shortly after scrolling stops.
+    const recordLabelForLine = (line: number): string | null => {
+      const records = useDocumentStore.getState().index?.records ?? []
+      if (records.length === 0) return null
+      // Last record whose startLine <= line (binary search — fast on 100k records).
+      let lo = 0
+      let hi = records.length - 1
+      let found = -1
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1
+        if (records[mid].startLine <= line) {
+          found = mid
+          lo = mid + 1
+        } else {
+          hi = mid - 1
+        }
+      }
+      if (found < 0) return null
+      const rec = records[found]
+      return rec.id ?? `Record ${rec.index + 1}`
+    }
+
+    instance.onDidScrollChange((e) => {
+      if (!e.scrollTopChanged) return
+      const hint = scrollHintRef.current
+      if (!hint) return
+      const topLine = instance.getVisibleRanges()[0]?.startLineNumber ?? 1
+      const label = recordLabelForLine(topLine)
+      if (!label) {
+        hint.style.opacity = '0'
+        return
+      }
+      hint.textContent = `📄 ${label}`
+      // Vertically align the pill with the scroll thumb, inset from top/bottom.
+      const viewportH = instance.getLayoutInfo().height
+      const maxScroll = Math.max(1, instance.getScrollHeight() - viewportH)
+      const ratio = Math.min(1, Math.max(0, e.scrollTop / maxScroll))
+      const inset = 40
+      hint.style.top = `${inset + ratio * Math.max(0, viewportH - inset * 2)}px`
+      hint.style.opacity = '1'
+      if (scrollHintTimer.current) window.clearTimeout(scrollHintTimer.current)
+      scrollHintTimer.current = window.setTimeout(() => {
+        if (scrollHintRef.current) scrollHintRef.current.style.opacity = '0'
+      }, 800)
+    })
+
     // Track the caret line (for bookmark toggling), select the enclosing record,
     // and record the caret per file for session restore.
     instance.onDidChangeCursorPosition((e) => {
@@ -123,6 +175,13 @@ export function EditorPane({ resolvedTheme, onReady }: EditorPaneProps) {
   useEffect(() => {
     monacoRef.current?.editor.setTheme(resolvedTheme === 'dark' ? 'icf-dark' : 'icf-light')
   }, [resolvedTheme])
+
+  // Clear the scroll-indicator fade timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (scrollHintTimer.current) window.clearTimeout(scrollHintTimer.current)
+    }
+  }, [])
 
   // When switching documents, restore that tab's saved caret (once per tab).
   // The editor model has already swapped by the time this passive effect runs.
@@ -179,27 +238,37 @@ export function EditorPane({ resolvedTheme, onReady }: EditorPaneProps) {
   }
 
   return (
-    <Editor
-      height="100%"
-      language="icf"
-      theme={resolvedTheme === 'dark' ? 'icf-dark' : 'icf-light'}
-      value={active.text}
-      path={active.id}
-      onChange={commitEditorChange}
-      onMount={handleMount}
-      options={{
-        readOnly: active.mode === 'view',
-        fontFamily: 'var(--app-font-mono)',
-        fontSize: 13,
-        minimap: { enabled: true },
-        glyphMargin: true,
-        folding: true,
-        renderWhitespace: 'boundary',
-        tabSize: 2,
-        insertSpaces: true,
-        wordWrap: 'off',
-        scrollBeyondLastLine: false
-      }}
-    />
+    <div className="relative h-full">
+      <Editor
+        height="100%"
+        language="icf"
+        theme={resolvedTheme === 'dark' ? 'icf-dark' : 'icf-light'}
+        value={active.text}
+        path={active.id}
+        onChange={commitEditorChange}
+        onMount={handleMount}
+        options={{
+          readOnly: active.mode === 'view',
+          fontFamily: 'var(--app-font-mono)',
+          fontSize: 13,
+          minimap: { enabled: true },
+          glyphMargin: true,
+          folding: true,
+          renderWhitespace: 'boundary',
+          tabSize: 2,
+          insertSpaces: true,
+          wordWrap: 'off',
+          scrollBeyondLastLine: false
+        }}
+      />
+      {/* Scroll-position indicator: the record id at the top of the viewport,
+          shown only while scrolling (opacity toggled imperatively in handleMount). */}
+      <div
+        ref={scrollHintRef}
+        aria-hidden
+        style={{ top: 40 }}
+        className="pointer-events-none absolute right-6 z-20 max-w-[45%] truncate rounded-md border border-app-border bg-app-surface/95 px-2 py-1 text-xs font-medium text-app-text opacity-0 shadow-md transition-opacity duration-200"
+      />
+    </div>
   )
 }

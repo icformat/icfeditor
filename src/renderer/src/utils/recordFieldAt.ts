@@ -94,7 +94,7 @@ export function resolveFieldAt(
     fieldName = schema ? (findNode(schema, owner)?.getFields()[cellIndex] ?? null) : null
   }
 
-  const master = resolveMaster(doc, cellText)
+  const master = resolveMaster(doc, cellText, section, owner)
   if (!fieldName && !master) return null
   return { fieldName, startColumn, endColumn, master }
 }
@@ -166,11 +166,24 @@ function findNode(schema: IcfSchema, name: string): SchemaNode | null {
 }
 
 /**
- * Resolves a `Type:Id` reference, or a bare value matching a master entry's
- * primary-key id *or* its `uuid` field (case-insensitive). Matching on UUID lets
- * hovering a master's UUID value show the same full record as hovering its id.
+ * Resolves a master entry for the hovered value:
+ *
+ * 1. An explicit `Type:Id` reference (valid anywhere) — resolved by its type.
+ * 2. A bare value, **only inside the `@masters` section and only against the
+ *    owning master type** — matched by primary-key id or `uuid` (so hovering a
+ *    master's id or UUID shows its record).
+ *
+ * The bare-value case is deliberately scoped to the owner type. A plain data
+ * field (e.g. a container's `id`) that happens to equal some master's primary
+ * key must not be mis-resolved to the wrong master — which is what a global
+ * scan across all master types did, picking the first matching type.
  */
-function resolveMaster(doc: IcfDocument, value: string): MasterEntryInfo | null {
+function resolveMaster(
+  doc: IcfDocument,
+  value: string,
+  section: Section,
+  owner: string
+): MasterEntryInfo | null {
   const masters = doc.getMasters()
   if (masters.isEmpty() || value === '') return null
 
@@ -180,10 +193,10 @@ function resolveMaster(doc: IcfDocument, value: string): MasterEntryInfo | null 
     if (referenced) return toEntryInfo(value.slice(0, value.indexOf(':')), referenced)
   }
 
-  // 2. A bare value: match any entry by its primary key (first field) or UUID.
-  for (const type of masters.getTypes()) {
-    const entries = masters.getType(type)?.elements() ?? []
-    for (const entry of entries) {
+  // 2. A bare master id / UUID — only when hovering inside the master's own
+  //    type in the `@masters` section.
+  if (section === 'masters' && owner) {
+    for (const entry of masters.getType(owner)?.elements() ?? []) {
       if (!entry.isObject()) continue
       const names = entry.fieldNames()
       const primaryKey = names[0]
@@ -192,7 +205,7 @@ function resolveMaster(doc: IcfDocument, value: string): MasterEntryInfo | null 
         (primaryKey && entry.get(primaryKey)?.asText() === value) ||
         (uuidField && entry.get(uuidField)?.asText() === value)
       ) {
-        return toEntryInfo(type, entry)
+        return toEntryInfo(owner, entry)
       }
     }
   }

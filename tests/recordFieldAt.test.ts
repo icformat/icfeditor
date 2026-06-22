@@ -104,6 +104,52 @@ describe('resolveFieldAt', () => {
     expect(resolveFieldAt(ICF, line, totalCol, doc)?.fieldName).toBe('Total')
   })
 
+  it('does not mis-resolve a data field that collides with a master primary key', () => {
+    // Two containers both keyed by `id`; a `serialcode` master has id == 1.
+    // Hovering the `1` in the lineindexes data row must show the lineindexes
+    // field — never the serialcode master (the first id==1 match).
+    const collide = [
+      '@kind icf',
+      '@version 1.0',
+      '',
+      '@schema id=Main',
+      '',
+      'serialcode[]:',
+      '  [id, sequence, code]',
+      '',
+      'lineindexes[]:',
+      '  [id, rowindexname, createdby]',
+      '',
+      '@masters',
+      '',
+      'serialcode:',
+      '  - 1, 100, ABC',
+      '',
+      '@data',
+      '',
+      '@record schema=Main id=R1',
+      '',
+      'lineindexes:',
+      '  - 1, Bill Items, admin',
+      ''
+    ].join('\n')
+    const cdoc = parser.parse(collide)
+    const clines = collide.split('\n')
+    const dataLine = clines.findIndex((l) => l.includes('- 1, Bill Items')) + 1
+    const col = clines[dataLine - 1].indexOf('1') + 1
+    const info = resolveFieldAt(collide, dataLine, col, cdoc)
+    expect(info?.fieldName).toBe('id')
+    expect(info?.master).toBeNull()
+
+    // …but hovering the same id inside the serialcode master row still resolves
+    // to the serialcode master (scoped to the owning type).
+    const mLine = clines.findIndex((l) => l.includes('- 1, 100, ABC')) + 1
+    const mCol = clines[mLine - 1].indexOf('1') + 1
+    const mInfo = resolveFieldAt(collide, mLine, mCol, cdoc)
+    expect(mInfo?.master?.type).toBe('serialcode')
+    expect(mInfo?.master?.fields[0]).toEqual({ key: 'id', value: '1' })
+  })
+
   it('returns null for non-value lines and schema/metadata sections', () => {
     expect(resolveFieldAt(ICF, locate('@record schema=Invoice')[0], 1, doc)).toBeNull()
     expect(resolveFieldAt(ICF, locate('documentindex:')[0], 1, doc)).toBeNull()

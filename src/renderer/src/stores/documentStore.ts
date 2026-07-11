@@ -13,7 +13,7 @@ import { nextId } from '../utils/id'
 import { baseName, extensionOf } from '../utils/format'
 
 const EMPTY_ICF = `@kind icf
-@version 1.0
+@version 1.1
 
 @schema
 

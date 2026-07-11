@@ -2,8 +2,8 @@ import { Dialog, DialogButton } from './Dialog'
 import logoUrl from '../assets/editor-logo.svg'
 
 const LINKS = [
-  { label: 'ICF 1.0 specification', url: 'https://icformat.org/icf/specification/v1/' },
-  { label: 'ICX 1.0 specification', url: 'https://icformat.org/icx/specification/v1/' },
+  { label: 'ICF 1.1 specification', url: 'https://icformat.org/icf/specification/v1.1/' },
+  { label: 'ICX 1.1 specification', url: 'https://icformat.org/icx/specification/v1.1/' },
   { label: 'icformat.org', url: 'https://icformat.org' },
   { label: 'icf.js library', url: 'https://github.com/icformat/icf.js' }
 ]

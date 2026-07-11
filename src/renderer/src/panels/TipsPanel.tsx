@@ -27,13 +27,13 @@ export function TipsPanel() {
       <h4 className="mb-1 font-semibold text-app-muted">Specifications</h4>
       <ul className="list-disc pl-4">
         <li>
-          <a className="text-app-accent" href="https://icformat.org/icf/specification/v1/" target="_blank" rel="noreferrer">
-            ICF 1.0 specification
+          <a className="text-app-accent" href="https://icformat.org/icf/specification/v1.1/" target="_blank" rel="noreferrer">
+            ICF 1.1 specification
           </a>
         </li>
         <li>
-          <a className="text-app-accent" href="https://icformat.org/icx/specification/v1/" target="_blank" rel="noreferrer">
-            ICX 1.0 specification
+          <a className="text-app-accent" href="https://icformat.org/icx/specification/v1.1/" target="_blank" rel="noreferrer">
+            ICX 1.1 specification
           </a>
         </li>
         <li>

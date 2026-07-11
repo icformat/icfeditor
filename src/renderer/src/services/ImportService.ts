@@ -252,12 +252,12 @@ function buildIcf(
   records: FlatRecord[],
   preferCollections: boolean
 ): string {
-  if (records.length === 0) return `@kind icf\n@version 1.0\n\n@schema\n\n@data\n`
+  if (records.length === 0) return `@kind icf\n@version 1.1\n\n@schema\n\n@data\n`
   const fields = keys.length > 0 ? keys : ['value']
 
   const metadata = new IcfMetadata()
   metadata.put('kind', 'icf')
-  metadata.put('version', '1.0')
+  metadata.put('version', '1.1')
   const inference = new SchemaInference('value')
   const attributes = new Map([['schema', nodeName]])
 

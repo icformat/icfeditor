@@ -52,6 +52,12 @@ function scanSectionLines(text: string): SectionLines {
     const line = lines[i]
     const lineNo = i + 1
 
+    // `!annotation:` heads (spec v1.1 §25/§46) never open or close a section
+    // and must never read as a master type header. They can't match any of the
+    // patterns below today (all require `@` or a `[A-Za-z_]` start), but guard
+    // explicitly so future pattern edits can't regress this.
+    if (line.trimStart().startsWith('!')) continue
+
     if (/^@metadata(\s|$)/.test(line)) {
       if (!metadataSeen) {
         result.metadata = lineNo

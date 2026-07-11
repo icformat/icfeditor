@@ -1,0 +1,71 @@
+@kind icf
+@version 1.1
+@encoding utf-8
+@delimiter comma
+@escape backslash
+
+@metadata
+
+title: Payroll Export
+description: ICF v1.1 feature sample
+creator: Administrator
+
+@schema id=Masters
+
+Department[]:
+  [deptid, deptname]
+
+@schema id=Employee
+
+employee:
+  [empid, empname, empemail, department, empstatus]
+
+  !defaults:
+    = empstatus=employed
+
+  !constraints:
+    = empid:unique,
+      empemail:required
+
+designation[]:
+  [desigid, designame]
+
+salary[]:
+  [desigref, month, year, amount]
+
+@masters
+
+Department:
+  - D01, Engineering
+  - D02, Finance
+
+@data
+
+@record schema=Employee id=EMP1 primary=designation
+
+employee:
+  = 2, Anand, anand@example.com, Department:D01, employed
+
+designation:
+  - DES1, Manager
+  - DES2, Lead
+
+salary:
+  - designation:DES1,
+    Jan,
+    2026,
+    12000
+  !overrides:
+    = amount=12500
+  - designation:DES2, Feb, 2026, 13000
+
+@record schema=Employee id=EMP2 primary=designation
+
+employee:
+  = 3, Meera, meera@example.com, Department:D02, employed
+
+designation:
+  - DES1, Director
+
+salary:
+  - designation:DES1, Jan, 2026, 22000

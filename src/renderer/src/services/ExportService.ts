@@ -167,7 +167,7 @@ export class ExportService {
   private yamlScalar(value: Json): string {
     if (value === null) return 'null'
     const text = String(value)
-    return /[:#\-?{}\[\],&*!|>'"%@`]/.test(text) || text === '' || /^\s|\s$/.test(text)
+    return /[:#\-?{}[\],&*!|>'"%@`]/.test(text) || text === '' || /^\s|\s$/.test(text)
       ? JSON.stringify(text)
       : text
   }

@@ -48,9 +48,11 @@ describe('withUpdatedChecksum', () => {
   })
 
   it('updates @checksum on an ICX file too, without disturbing @sourcechecksum', async () => {
+    // Modern ICX 1.1 shape: the shared structure is `recordindex[]` (the ICX
+    // 1.0 name `index[]` collides with the reserved directive name).
     const icx = [
       '@kind icx',
-      '@version 1.0',
+      '@version 1.1',
       '@source sample.icf',
       '@hashmethod sha256',
       '@sourcechecksum sha256:aaa',
@@ -59,7 +61,7 @@ describe('withUpdatedChecksum', () => {
       '',
       '@schema',
       '',
-      'index[]:',
+      'recordindex[]:',
       '  [RecordID, UUID, Line, Offset, Size, Checksum]',
       '',
       '@data',

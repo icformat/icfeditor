@@ -7,6 +7,7 @@ import { stripExtension } from '../utils/format'
 
 const FORMATS: Array<{ id: ExportFormat; label: string }> = [
   { id: 'icf', label: 'ICF' },
+  { id: 'icfResolved', label: 'ICF (resolved — defaults & overrides applied)' },
   { id: 'icx', label: 'ICX index' },
   { id: 'jsonPretty', label: 'JSON (pretty)' },
   { id: 'jsonCompact', label: 'JSON (compact)' },

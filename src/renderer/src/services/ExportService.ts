@@ -35,6 +35,9 @@ export class ExportService {
     switch (format) {
       case 'icf':
         return { format, extension: 'icf', content: this.writer.write(doc) }
+      case 'icfResolved':
+        // Resolved export: !defaults/!overrides applied, annotations dropped.
+        return { format, extension: 'icf', content: this.writer.writeResolved(doc) }
       case 'icx': {
         // Fully-populated index: Line/Offset/Size/Checksum (+ UUID) for records
         // and masters, so the exported ICX is complete rather than a skeleton.

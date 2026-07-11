@@ -32,8 +32,8 @@ export function TipsPanel() {
           </a>
         </li>
         <li>
-          <a className="text-app-accent" href="https://icformat.org/icx/specification/v1.1/" target="_blank" rel="noreferrer">
-            ICX 1.1 specification
+          <a className="text-app-accent" href="https://icformat.org/icx/specification/v1.2/" target="_blank" rel="noreferrer">
+            ICX 1.2 specification
           </a>
         </li>
         <li>

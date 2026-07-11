@@ -1,5 +1,6 @@
 import {
   write,
+  writeResolved,
   writeWithChecksum,
   IcfWriter,
   type IcfDocument,
@@ -24,6 +25,15 @@ export class ICFWriterService {
    */
   writeWithChecksum(target: IcfDocument | IcfNode): Promise<string> {
     return writeWithChecksum(target)
+  }
+
+  /**
+   * Serialize with ICF v1.1 Phase-5 resolution applied: `!defaults` fill
+   * missing fields, `!overrides` replace row values, and annotation lines are
+   * dropped from the output. The parsed document is not mutated.
+   */
+  writeResolved(doc: IcfDocument): string {
+    return writeResolved(doc)
   }
 
   /** Canonical body text of one record — used to diff/compare records. */

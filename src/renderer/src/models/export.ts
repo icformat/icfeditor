@@ -1,6 +1,7 @@
-/** Export targets from Prompt.md §Export. */
+/** Export targets from Prompt.md §Export (+ resolved ICF, spec v1.1 Phase 5). */
 export type ExportFormat =
   | 'icf'
+  | 'icfResolved'
   | 'icx'
   | 'json'
   | 'jsonPretty'

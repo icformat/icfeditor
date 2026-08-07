@@ -1,6 +1,6 @@
 {
   "name": "icf-editor",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "description": "Cross-platform desktop editor for Indent Comma Format (ICF) and ICX index files.",
   "author": "Edison Williams",
   "license": "MIT",

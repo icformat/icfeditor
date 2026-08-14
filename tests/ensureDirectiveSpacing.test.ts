@@ -58,3 +58,19 @@ describe('ensureDirectiveSpacing', () => {
     expect(text).toBe(['@version 1.0', '', '@data'].join('\n'))
   })
 })
+
+describe('ensureDirectiveSpacing — comments (spec v1.1 §55)', () => {
+  it('keeps a # comment attached to the section directive below it', () => {
+    const input = ['@kind icf', '', '# employee data', '@data'].join('\n')
+    const { text, changedLines } = ensureDirectiveSpacing(input)
+    expect(text).toBe(input)
+    expect(changedLines).toEqual([])
+  })
+
+  it('does not separate a label comment even when the header above is tight', () => {
+    const input = ['@kind icf', '# section label', '@data'].join('\n')
+    const { text } = ensureDirectiveSpacing(input)
+    // the comment labels @data; no blank is wedged between them
+    expect(text).toBe(input)
+  })
+})

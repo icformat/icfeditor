@@ -57,6 +57,9 @@ export function normalizeIndentation(text: string): IndentNormalizationResult {
     // Blank lines carry no indentation to fix.
     if (line.trim() === '') continue
 
+    // Comment lines (spec v1.1 §55) keep their author-chosen alignment.
+    if (line.trim().startsWith('#')) continue
+
     // A non-directive content line at column 0, inside the directive region.
     if (seenDirective && /^\S/.test(line)) {
       lines[i] = INDENT + line

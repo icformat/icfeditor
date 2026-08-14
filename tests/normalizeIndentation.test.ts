@@ -46,3 +46,14 @@ describe('normalizeIndentation', () => {
     expect(text.split('\n')[2]).toBe('  record-ish')
   })
 })
+
+describe('normalizeIndentation — comments (spec v1.1 §55)', () => {
+  it('leaves column-0 # comment lines untouched', () => {
+    const input = ['@data', '', '# between records', '@record id=D1', 'documentindex:'].join('\n')
+    const { text, changedLines } = normalizeIndentation(input)
+    expect(text).toBe(
+      ['@data', '', '# between records', '@record id=D1', '  documentindex:'].join('\n')
+    )
+    expect(changedLines).toEqual([5])
+  })
+})

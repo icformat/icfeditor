@@ -28,6 +28,8 @@ function directiveName(line: string): string | null {
  * Never modified:
  *  - metadata directives (`@kind`, `@version`, `@schema-url`, …),
  *  - a section directive that is already the first line of the file,
+ *  - a section directive directly under a `#` comment line (spec v1.1 §55) —
+ *    the comment is treated as the section's label and stays attached,
  *  - `@`-lines inside a verbatim text block (`<<TAG … TAG>>`, spec §18), which
  *    are ordinary text, not directives.
  *
@@ -63,7 +65,10 @@ export function ensureDirectiveSpacing(text: string): DirectiveSpacingResult {
 
     const name = directiveName(line)
     const isSection = name !== null && SECTION_DIRECTIVES.has(name)
-    const prevNonEmpty = out.length > 0 && out[out.length - 1].trim() !== ''
+    const prev = out.length > 0 ? out[out.length - 1].trim() : ''
+    // A `#` comment directly above (spec v1.1 §55) labels the section — leave
+    // it attached rather than wedging a blank line between the two.
+    const prevNonEmpty = prev !== '' && !prev.startsWith('#')
 
     // Insert a blank above a section directive when one is missing and it is not
     // the very first line of the file.

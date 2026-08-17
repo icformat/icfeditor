@@ -65,6 +65,10 @@ export function useAppCommands(nav: CommandNav) {
           uiStore.openDialog('import')
           break
 
+        case 'file.properties':
+          if (active) uiStore.openDialog('fileProperties')
+          break
+
         case 'app.requestClose':
           // Window close requested by the main process. Prompt only for dirty
           // *saved* files (untitled buffers are auto-persisted to the session);

@@ -80,7 +80,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.statFile, async (_e, path: string): Promise<FileStat | null> => {
     try {
       const s = await stat(path)
-      return { mtimeMs: s.mtimeMs, size: s.size }
+      return { mtimeMs: s.mtimeMs, size: s.size, birthtimeMs: s.birthtimeMs }
     } catch {
       return null // missing / inaccessible
     }

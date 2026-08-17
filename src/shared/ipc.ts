@@ -32,6 +32,8 @@ export const IpcChannels = {
 export interface FileStat {
   mtimeMs: number
   size: number
+  /** Creation time, when the platform reports one (used by File → Properties). */
+  birthtimeMs?: number
 }
 
 /** A file the renderer asked to be read, with its text content and disk signature. */
@@ -72,6 +74,7 @@ export type MenuCommand =
   | 'file.saveAs'
   | 'file.saveAll'
   | 'file.import'
+  | 'file.properties'
   | 'app.requestClose'
   | 'edit.undo'
   | 'edit.redo'

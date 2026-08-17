@@ -63,6 +63,8 @@ export function buildMenu(): void {
         { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('file.saveAs') },
         { label: 'Save All', accelerator: 'CmdOrCtrl+Alt+S', click: () => send('file.saveAll') },
         { type: 'separator' },
+        { label: 'Properties…', accelerator: 'Alt+Return', click: () => send('file.properties') },
+        { type: 'separator' },
         isMac ? { role: 'close' } : { role: 'quit' }
       ]
     },

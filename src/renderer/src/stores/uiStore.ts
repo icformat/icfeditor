@@ -56,7 +56,7 @@ function saveLayout(sizes: LayoutSizes): void {
 export type PanelId = 'tree' | 'properties' | 'validation' | 'search' | 'statistics' | 'tips'
 
 /** Modal dialogs (Prompt.md §Merge/§Split/§Export/§Help). */
-export type DialogId = 'merge' | 'split' | 'export' | 'goto' | 'about' | 'import'
+export type DialogId = 'merge' | 'split' | 'export' | 'goto' | 'about' | 'import' | 'fileProperties'
 
 /**
  * An in-flight close that is blocked on unsaved changes. `tab` closes a single

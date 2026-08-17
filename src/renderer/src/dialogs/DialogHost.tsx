@@ -5,6 +5,7 @@ import { ExportDialog } from './ExportDialog'
 import { GoToDialog } from './GoToDialog'
 import { AboutDialog } from './AboutDialog'
 import { ImportDialog } from './ImportDialog'
+import { FilePropertiesDialog } from './FilePropertiesDialog'
 import { ConfirmCloseDialog } from './ConfirmCloseDialog'
 import { ExternalChangeDialog } from './ExternalChangeDialog'
 
@@ -26,6 +27,7 @@ export function DialogHost({ onReveal }: DialogHostProps) {
       {dialog === 'goto' && <GoToDialog onClose={close} onReveal={onReveal} />}
       {dialog === 'about' && <AboutDialog onClose={close} />}
       {dialog === 'import' && <ImportDialog onClose={close} />}
+      {dialog === 'fileProperties' && <FilePropertiesDialog onClose={close} />}
       {/* These prompts are independent of activeDialog and can appear over it. */}
       <ConfirmCloseDialog />
       <ExternalChangeDialog />

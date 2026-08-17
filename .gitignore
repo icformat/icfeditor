@@ -12,3 +12,4 @@ ref/
 # Local scratch / paste files (not part of the project)
 keylist.txt
 githuberror.txt
+dist-web/

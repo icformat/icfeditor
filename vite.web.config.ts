@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { rename } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
@@ -45,6 +46,13 @@ const outDir = resolve(import.meta.dirname, 'dist-web')
 
 export default defineConfig({
   root: 'src/renderer',
+  define: {
+    __APP_VERSION__: JSON.stringify(
+      (JSON.parse(readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf-8')) as {
+        version: string
+      }).version
+    )
+  },
   // Relative asset URLs so the app works from any mount point (e.g. /editor/).
   base: './',
   resolve: {

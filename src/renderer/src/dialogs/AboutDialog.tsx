@@ -19,8 +19,8 @@ export function AboutDialog({ onClose }: { onClose: () => void }) {
       <div className="mb-3 flex items-center gap-3">
         <img src={logoUrl} alt="" className="h-10 w-10" />
         <p>
-          <strong>ICF Editor</strong> — a desktop editor for the Indent Comma Format (ICF) and its
-          ICX index companion.
+          <strong>ICF Editor</strong> <span className="text-app-muted">v{__APP_VERSION__}</span> — an
+          editor for the Indent Comma Format (ICF) and its ICX index companion.
         </p>
       </div>
       <p className="mb-3 text-app-muted">

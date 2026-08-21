@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "fast-xml-parser": "^5.7.0",
-    "icf.js": "^1.2.1",
+    "icf.js": "^1.2.2",
     "yaml": "^2.5.0"
   },
   "overrides": {
